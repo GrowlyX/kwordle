@@ -27,8 +27,7 @@ object KWordleSolver
     {
         val gson = GsonBuilder()
             .setLongSerializationPolicy(LongSerializationPolicy.STRING)
-            // wordle's json array is wonky
-            .setLenient().create()
+            .create()
 
         // asking for the character amount
         // they're playing with
