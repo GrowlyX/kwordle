@@ -2,11 +2,11 @@ package gg.growly.wordle
 
 import com.google.gson.GsonBuilder
 import com.google.gson.LongSerializationPolicy
+import gg.growly.wordle.character.KWordleChar
 import gg.growly.wordle.character.KWordleCharType
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
-import java.net.URL
 
 /**
  * Wordle solver- only tested
@@ -17,6 +17,11 @@ import java.net.URL
  */
 object KWordleSolver
 {
+    // tracking characters of the current word, we
+    // will use this to find the best possible next "currentWord"
+    private val characters =
+        mutableMapOf<Int, KWordleChar>()
+
     @JvmStatic
     fun main(args: Array<String>)
     {
@@ -49,10 +54,67 @@ object KWordleSolver
                 }
         }
 
-        val randomWord = wordList
+        // generating a random word
+        // for our first entry
+        var currentWord = wordList
             .shuffled().random()
 
-        println("${Color.YELLOW}Please enter the first word: ${Color.CYAN}${randomWord}")
+        while (true)
+        {
+            println("${Color.YELLOW}Please enter the word: ${Color.CYAN}$currentWord")
+
+            // handling characters within
+            // the range of 1-charAmount
+            for (i in 1..charAmount)
+            {
+                val character = currentWord[i - 1]
+                    .lowercaseChar()
+
+                val status = """
+                    ${Color.YELLOW}What is the status for $character in $currentWord?
+                    ${Color.WHITE_BOLD}Statuses: ${KWordleCharType.values().joinToString()}
+                """.trimIndent().response()
+
+                val parsedStatus = KWordleCharType
+                    .valueOf(status)
+
+                val wordleChar = KWordleChar(
+                    character, parsedStatus
+                )
+
+                characters[i - 1] = wordleChar
+            }
+
+            val values = characters.values
+
+            val unused = values
+                .map { it.value }
+
+            val fixedPlacement = characters.filter {
+                it.value.type == KWordleCharType.FIXED
+            }
+
+            val wrongPlacement = values.filter {
+                it.type == KWordleCharType.WRONG_PLACEMENT
+            }
+
+            currentWord = wordList
+                .filter { word ->
+                    word.none { unused.contains(it) }
+                }
+                .filter { word ->
+                    wrongPlacement
+                        .map { it.value }
+                        .all { word.contains(it) }
+                }
+                .also {
+                    println(it)
+                }
+                .first { word ->
+                    fixedPlacement
+                        .all { word[it.key] == it.value.value }
+                }
+        }
     }
 
     private val reader = BufferedReader(
@@ -62,12 +124,6 @@ object KWordleSolver
     private fun String.response(): String
     {
         println("$this ")
-        return reader.readLine()
-    }
-
-    private fun List<String>.response(): String
-    {
-        forEach { println(it) }
         return reader.readLine()
     }
 
