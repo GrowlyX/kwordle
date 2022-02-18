@@ -88,15 +88,14 @@ object KWordleSolver
             val values = characters.values
 
             val unused = values
+                .filter { it.type == KWordleCharType.NO_CHAR }
                 .map { it.value }
 
-            val fixedPlacement = characters.filter {
-                it.value.type == KWordleCharType.FIXED
-            }
+            val fixedPlacement = characters
+                .filter { it.value.type == KWordleCharType.FIXED }
 
-            val wrongPlacement = values.filter {
-                it.type == KWordleCharType.WRONG_PLACEMENT
-            }
+            val wrongPlacement = values
+                .filter { it.type == KWordleCharType.WRONG_PLACEMENT }
 
             currentWord = wordList
                 .filter { word ->
@@ -106,9 +105,6 @@ object KWordleSolver
                     wrongPlacement
                         .map { it.value }
                         .all { word.contains(it) }
-                }
-                .also {
-                    println(it)
                 }
                 .first { word ->
                     fixedPlacement
