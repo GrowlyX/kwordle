@@ -1,0 +1,27 @@
+plugins {
+    id 'application'
+    id "com.github.johnrengelman.shadow" version "7.1.2"
+    id 'org.jetbrains.kotlin.jvm' version '1.6.10'
+}
+
+group 'gg.growly.kwordle'
+version '1.0.0'
+
+application {
+    mainClassName "gg.growly.wordle.KWordleSolver"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation 'com.google.code.gson:gson:2.9.0'
+}
+
+shadowJar {
+    archiveName "kwordle.jar"
+}
+
+tasks.build.dependsOn(shadowJar)
