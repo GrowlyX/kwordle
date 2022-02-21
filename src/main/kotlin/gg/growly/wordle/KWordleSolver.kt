@@ -58,6 +58,9 @@ object KWordleSolver
         var currentWord = wordList
             .shuffled().random()
 
+        val used = mutableListOf<String>()
+        val unused = mutableListOf<Pair<Int, Char>>()
+
         while (true)
         {
             println("${Color.YELLOW}Please enter the word: ${Color.CYAN}$currentWord")
@@ -86,9 +89,15 @@ object KWordleSolver
 
             val values = characters.values
 
-            val unused = values
-                .filter { it.type == KWordleCharType.NO_CHAR }
-                .map { it.value }
+            characters.entries
+                .filter { it.value.type == KWordleCharType.NO_CHAR }
+                .map { Pair(it.key, it.value.value) }
+                .forEach {
+                    if (!unused.contains(it))
+                    {
+                        unused.add(it)
+                    }
+                }
 
             val fixedPlacement = characters
                 .filter { it.value.type == KWordleCharType.FIXED }
@@ -97,18 +106,31 @@ object KWordleSolver
                 .filter { it.type == KWordleCharType.WRONG_PLACEMENT }
 
             currentWord = wordList
+                .filter {
+                    !used.contains(it)
+                }
                 .filter { word ->
-                    word.none { unused.contains(it) }
+                    word
+                        .mapIndexed { index, c -> Pair(index, c) }
+                        .none { unused.contains(it) }
                 }
                 .filter { word ->
                     wrongPlacement
                         .map { it.value }
                         .all { word.contains(it) }
                 }
-                .first { word ->
+                .filter { word ->
                     fixedPlacement
-                        .all { word[it.key] == it.value.value }
+                        .all {
+                            word[it.key] == it.value.value
+                        }
                 }
+                .also {
+                    println(it)
+                }
+                .first()
+
+            used.add(currentWord)
         }
     }
 
